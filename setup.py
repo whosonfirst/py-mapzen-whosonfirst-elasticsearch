@@ -7,7 +7,7 @@ import os, sys
 from shutil import rmtree
 
 cwd = os.path.dirname(os.path.realpath(sys.argv[0]))
-egg_info = cwd + "/mapzen.whosonfirst.search.egg-info"
+egg_info = cwd + "/mapzen.whosonfirst.elasticsearch.egg-info"
 if os.path.exists(egg_info):
     rmtree(egg_info)
 
@@ -18,7 +18,7 @@ version = open("VERSION").read()
 desc = open("README.md").read()
 
 setup(
-    name='mapzen.whosonfirst.search',
+    name='mapzen.whosonfirst.elasticsearch',
     namespace_packages=['mapzen', 'mapzen.whosonfirst', 'mapzen.whosonfirst.elasticsearch'],
     version=version,
     description='Simple Python base class for simple Elasticsearch functionality',
