@@ -49,7 +49,7 @@ class base:
         raise Exception, "You must define your own 'document_id' method"
 
     def document_index(self):
-        raise self.index
+        return self.index
     
     def document_type(self, doc):
         return self.doctype
@@ -99,7 +99,7 @@ class index(base):
 
     def prepare_file(self, f):
 
-        ddoc = self.load_file(f)
+        doc = self.load_file(f)
         return self.prepare_document(doc)
 
     def prepare_file_bulk(self, f):
