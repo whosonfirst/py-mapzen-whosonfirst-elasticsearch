@@ -132,6 +132,14 @@ class search (base):
 
         return rsp['hits']['hits'][0]
 
+    def standard_rsp(self, rsp):
+
+        return {
+            'ok': 1,
+            'rows': self.rows(rsp).
+            'pagination': self.paginate(rsp)
+        }
+
     def rows(self, rsp):
         return rsp['hits']['hits']
 
