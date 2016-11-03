@@ -1,16 +1,7 @@
 # py-mapzen-whosonfirst-elasticsearch
 
-Simple Python base class for simple Elasticsearch functionality.
+There are many libraries for talking to Elasticsearch. This one is ours.
 
-## REALLY IMPORTANT
+## Caveats
 
-This is still "wet paint". It's probably too soon, for you.
-
-## IMPORTANT
-
-This library is provided as-is, right now. It lacks proper documentation which will probably make it hard for you to use unless you are willing to poke and around and investigate things on your own.
-
-## Usage
-
-_Please write me_
-
+This is work in progress and not finished yet. Eventually either replace [py-mapzen-whosonfirst-search](https://github.com/whosonfirst/py-mapzen-whosonfirst-search) or be used by it under the hood. We'll see.

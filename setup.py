@@ -14,24 +14,23 @@ if os.path.exists(egg_info):
 from setuptools import setup, find_packages
 
 packages = find_packages()
+desc = open("README.md").read(),
 version = open("VERSION").read()
-desc = open("README.md").read()
 
 setup(
     name='mapzen.whosonfirst.elasticsearch',
-    namespace_packages=['mapzen', 'mapzen.whosonfirst', 'mapzen.whosonfirst.elasticsearch'],
+    namespace_packages=['mapzen', 'mapzen.whosonfirst', 'mapzen.whosonfirst.elasticsearch' ],
     version=version,
-    description='Simple Python base class for simple Elasticsearch functionality',
+    description='',
     author='Mapzen',
-    url='https://github.com/whosonfirst/py-mapzen-whosonfirst-elasticsearch',
+    url='https://github.com/mapzen/py-mapzen-whosonfirst-elasticsearch',
     install_requires=[
-        'elasticsearch',
-        'requests',
+        'requests'
         ],
     dependency_links=[
         ],
     packages=packages,
     scripts=[
         ],
-    download_url='https://github.com/whosonfirst/py-mapzen-whosonfirst-elasticsearch/releases/tag/' + version,
+    download_url='https://github.com/mapzen/py-mapzen-whosonfirst-elasticsearch/releases/tag/' + version,
     license='BSD')
