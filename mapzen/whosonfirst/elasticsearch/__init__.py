@@ -79,6 +79,9 @@ class search (base):
 
         return rsp['hits']['hits'][0]
 
+    def rows(self, rsp):
+        return rsp['hits']['hits']
+
     def paginate(self, rsp, **kwargs):
 
         per_page = kwargs.get('per_page', self.per_page)
