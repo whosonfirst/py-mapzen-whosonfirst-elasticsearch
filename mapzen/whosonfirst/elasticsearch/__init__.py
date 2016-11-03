@@ -136,7 +136,7 @@ class search (base):
 
         return {
             'ok': 1,
-            'rows': self.rows(rsp).
+            'rows': self.rows(rsp),
             'pagination': self.paginate(rsp)
         }
 
