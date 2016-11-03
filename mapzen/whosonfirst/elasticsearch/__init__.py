@@ -32,7 +32,7 @@ class search (base):
 
         path = kwargs.get('path', '_search')
         body = kwargs.get('body', {})
-        query = kwargs.get('query', {})
+        params = kwargs.get('params', {})
 
         if self.index:
             url = "http://%s:%s/%s/%s" % (self.host, self.port, self.index, path)
@@ -42,23 +42,23 @@ class search (base):
         page = self.page
         per_page = self.per_page
 
-        if query.get('per_page', None):
+        if params.get('per_page', None):
 
-            per_page = query['per_page']
-            del(query['per_page'])
+            per_page = params['per_page']
+            del(params['per_page'])
 
             if per_page > self.per_page_max:
                 per_page = self.per_page_max
 
-        if query.get('page', None):
-            page = query['page']
-            del(query['page'])
+        if params.get('page', None):
+            page = params['page']
+            del(params['page'])
 
-        query['_from'] = (page - 1) * per_page
-        query['size'] = per_page
+        params['_from'] = (page - 1) * per_page
+        params['size'] = per_page
 
-        if len(query.keys()):
-            q = urllib.urlencode(query)
+        if len(params.keys()):
+            q = urllib.urlencode(params)
             url = url + "?" + q
             
         body = json.dumps(body)
