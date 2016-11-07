@@ -5,6 +5,8 @@ import json
 import urllib
 import requests
 import math
+import time
+import logging
 
 class base:
 
@@ -13,7 +15,7 @@ class base:
         self.host = kwargs.get('host', 'localhost')
         self.port = kwargs.get('port', 9200)
         self.index = kwargs.get('index', None)
-        
+
     def __str__ (self):
         return "%s:%s (%s)" % (self.host, self.port, self.index)
 
@@ -25,6 +27,13 @@ class search (base):
 
         self.per_page = kwargs.get('per_page', 100)
         self.per_page_max = kwargs.get('per_page_max', 500)
+
+        self.slow_queries = kwargs.get('slow_queries', None)
+        
+        if self.slow_queries != None:
+            self.slow_queries = float(self.slow_queries)
+        
+        self.slow_queries_log = kwargs.get('slow_queries_log', None)
 
         self.page = 1
 
@@ -116,7 +125,22 @@ class search (base):
             
         body = json.dumps(body)
 
+        t1 = time.time()
+
         rsp = requests.post(url, data=body)
+
+        t2 = time.time()
+        t = t2 - t1
+
+        if self.slow_queries != None and t > self.slow_queries:
+
+            msg = "%ss %s#%s (%s)" % (t, self.host, self.index, body)
+
+            if self.slow_queries_log:
+                self.slow_queries_log.warning(msg)
+            else:
+                logging.warning(msg)
+
         return json.loads(rsp.content)
 
     def single(self, rsp):
