@@ -12,9 +12,79 @@ class base:
         self.host = kwargs.get('host', 'localhost')
         self.port = kwargs.get('port', 9200)
         self.index = kwargs.get('index', None)
+        self.index = kwargs.get('doctype', None)
 
-    def __str__ (self):
-        return "%s:%s (%s)" % (self.host, self.port, self.index)
+class index (base):
+
+    # https://www.elastic.co/guide/en/elasticsearch/reference/2.4/docs-index_.html
+
+    def index (self, data, **kwargs):
+
+        """
+        {
+            'id': id,
+            'index': self.index,
+            'doc_type': doctype,
+            'body': body
+        }
+        """
+
+        url = "http://%s:%s/%s/%s/%s" % (self.host, self.port, data['index'], data['doc_type'], doc['id'])
+
+        body = json.loads(data['body'])
+
+        try:
+            requests.post(url, data=body)
+        except Exception, e:
+            logging.error("failed to index %s: %s" % (url, e))
+            return False
+
+        return True
+
+    # https://www.elastic.co/guide/en/elasticsearch/reference/2.4/docs-bulk.html
+
+    def bulk_index (self, iter, **kwargs):
+
+        """
+        {
+            '_id': id,
+            '_index': self.index,
+            '_type': doctype,
+            '_source': body
+        }
+        """
+
+        url = "http://%s:%s/%s/%s/_bulk" % (self.host, self.port, data['index'], data['doc_type'])
+
+        cmds = []
+
+        for index in iter:
+
+            # this sucks but we'll live with it for now
+
+            body = index["_source"]
+            del(index["_source"])
+
+            cmds.append(json.dumps(index))
+            cmds.append(json.dumps(body))
+
+        # from the docs:
+        # NOTE: the final line of data must end with a newline character \n.
+
+        cmds.append("")
+        
+        body = "\n".join(cmds)
+
+        try:
+            requests.post(url, data=body)
+        except Exception, e:
+            logging.error("failed to index %s: %s" % (url, e))
+            return False
+
+        return True
+
+    def delete (self):
+        raise Exception, "Please implement me"
 
 class search (base):
 
