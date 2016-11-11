@@ -83,8 +83,28 @@ class index (base):
 
         return True
 
+    # https://www.elastic.co/guide/en/elasticsearch/reference/2.4/docs-delete.html
+
     def delete (self):
-        raise Exception, "Please implement me"
+
+        """
+        {
+            'id': id,
+            'index': self.index,
+            'doc_type': doctype,
+            'refresh': True
+        }
+        """
+
+        url = "http://%s:%s/%s/%s/%s" % (self.host, self.port, data['index'], data['doc_type'], doc['id'])
+
+        try:
+            requests.delete(url)
+        except Exception, e:
+            logging.error("failed to index %s: %s" % (url, e))
+            return False
+
+        return True
 
 class search (base):
 
