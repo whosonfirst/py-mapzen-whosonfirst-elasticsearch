@@ -12,13 +12,13 @@ class base:
         self.host = kwargs.get('host', 'localhost')
         self.port = kwargs.get('port', 9200)
         self.index = kwargs.get('index', None)
-        self.index = kwargs.get('doctype', None)
+        self.doctype = kwargs.get('doctype', None)
 
 class index (base):
 
     # https://www.elastic.co/guide/en/elasticsearch/reference/2.4/docs-index_.html
 
-    def index (self, data, **kwargs):
+    def index_document (self, data, **kwargs):
 
         """
         {
@@ -29,21 +29,25 @@ class index (base):
         }
         """
 
-        url = "http://%s:%s/%s/%s/%s" % (self.host, self.port, data['index'], data['doc_type'], doc['id'])
+        url = "http://%s:%s/%s/%s/%s" % (self.host, self.port, data['index'], data['doc_type'], data['id'])
 
-        body = json.loads(data['body'])
+        body = json.dumps(data['body'])
 
         try:
-            requests.post(url, data=body)
+            rsp = requests.post(url, data=body)
         except Exception, e:
             logging.error("failed to index %s: %s" % (url, e))
             return False
 
+        if rsp.status_code != 200:
+            logging.error("failed to index %s: %s %s" % (url, rsp.status_code, rsp.content))
+            return False
+            
         return True
 
     # https://www.elastic.co/guide/en/elasticsearch/reference/2.4/docs-bulk.html
 
-    def bulk_index (self, iter, **kwargs):
+    def index_documents_bulk (self, iter, **kwargs):
 
         """
         {
@@ -76,16 +80,20 @@ class index (base):
         body = "\n".join(cmds)
 
         try:
-            requests.post(url, data=body)
+            rsp = requests.post(url, data=body)
         except Exception, e:
             logging.error("failed to index %s: %s" % (url, e))
+            return False
+
+        if rsp.status_code != 200:
+            logging.error("failed to (bulk) index %s: %s %s" % (url, rsp.status_code, rsp.content))
             return False
 
         return True
 
     # https://www.elastic.co/guide/en/elasticsearch/reference/2.4/docs-delete.html
 
-    def delete (self):
+    def delete_document (self, data):
 
         """
         {
