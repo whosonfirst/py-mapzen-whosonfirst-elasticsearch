@@ -39,7 +39,7 @@ class index (base):
             logging.error("failed to index %s: %s" % (url, e))
             return False
 
-        if rsp.status_code != 200:
+        if not rsp.status_code in (200, 201):
             logging.error("failed to index %s: %s %s" % (url, rsp.status_code, rsp.content))
             return False
             
@@ -85,7 +85,7 @@ class index (base):
             logging.error("failed to index %s: %s" % (url, e))
             return False
 
-        if rsp.status_code != 200:
+        if not rsp.status_code in (200, 201):
             logging.error("failed to (bulk) index %s: %s %s" % (url, rsp.status_code, rsp.content))
             return False
 
