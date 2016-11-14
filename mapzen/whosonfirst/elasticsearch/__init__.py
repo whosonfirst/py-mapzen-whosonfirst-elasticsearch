@@ -49,6 +49,8 @@ class index (base):
 
     def index_documents_bulk (self, iter, **kwargs):
 
+        count = kwargs.get('count', 1000)
+
         """
         {
             '_id': id,
@@ -58,36 +60,53 @@ class index (base):
         }
         """
 
-        url = "http://%s:%s/%s/%s/_bulk" % (self.host, self.port, data['index'], data['doc_type'])
+        url = "http://%s:%s/_bulk" % (self.host, self.port)
 
         cmds = []
 
         for index in iter:
-
+            
             # this sucks but we'll live with it for now
 
             body = index["_source"]
             del(index["_source"])
 
+            index = { 'index': index }
+
             cmds.append(json.dumps(index))
             cmds.append(json.dumps(body))
+            
+            # from the docs:
+            # NOTE: the final line of data must end with a newline character \n.
 
-        # from the docs:
-        # NOTE: the final line of data must end with a newline character \n.
+            if len(cmds) == 100:
 
-        cmds.append("")
-        
-        body = "\n".join(cmds)
+                cmds.append("")
+                body = "\n".join(cmds)
+                
+                try:
+                    rsp = requests.post(url, data=body)
+                except Exception, e:
+                    logging.error("failed to index %s: %s" % (url, e))
+                    return False
 
-        try:
-            rsp = requests.post(url, data=body)
-        except Exception, e:
-            logging.error("failed to index %s: %s" % (url, e))
-            return False
+                if not rsp.status_code in (200, 201):
+                    logging.error("failed to (bulk) index %s: %s %s" % (url, rsp.status_code, rsp.content))
+                    return False
 
-        if not rsp.status_code in (200, 201):
-            logging.error("failed to (bulk) index %s: %s %s" % (url, rsp.status_code, rsp.content))
-            return False
+                cmds = []
+
+        if len(cmds):
+
+            try:
+                rsp = requests.post(url, data=body)
+            except Exception, e:
+                logging.error("failed to index %s: %s" % (url, e))
+                return False
+                
+            if not rsp.status_code in (200, 201):
+                logging.error("failed to (bulk) index %s: %s %s" % (url, rsp.status_code, rsp.content))
+                return False
 
         return True
 
