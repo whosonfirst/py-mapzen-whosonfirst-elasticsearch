@@ -49,7 +49,7 @@ class index (base):
 
     def index_documents_bulk (self, iter, **kwargs):
 
-        count = kwargs.get('count', 1000)
+        count = kwargs.get('count', 5000)
 
         """
         {
@@ -79,7 +79,7 @@ class index (base):
             # from the docs:
             # NOTE: the final line of data must end with a newline character \n.
 
-            if len(cmds) == 100:
+            if len(cmds) == count:
 
                 cmds.append("")
                 body = "\n".join(cmds)
@@ -97,6 +97,9 @@ class index (base):
                 cmds = []
 
         if len(cmds):
+
+            cmds.append("")
+            body = "\n".join(cmds)
 
             try:
                 rsp = requests.post(url, data=body)
