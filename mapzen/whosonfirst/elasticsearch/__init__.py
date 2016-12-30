@@ -12,9 +12,129 @@ class base:
         self.host = kwargs.get('host', 'localhost')
         self.port = kwargs.get('port', 9200)
         self.index = kwargs.get('index', None)
+        self.doctype = kwargs.get('doctype', None)
 
-    def __str__ (self):
-        return "%s:%s (%s)" % (self.host, self.port, self.index)
+class index (base):
+
+    # https://www.elastic.co/guide/en/elasticsearch/reference/2.4/docs-index_.html
+
+    def index_document (self, data, **kwargs):
+
+        """
+        {
+            'id': id,
+            'index': self.index,
+            'doc_type': doctype,
+            'body': body
+        }
+        """
+
+        url = "http://%s:%s/%s/%s/%s" % (self.host, self.port, data['index'], data['doc_type'], data['id'])
+
+        body = json.dumps(data['body'])
+
+        try:
+            rsp = requests.post(url, data=body)
+        except Exception, e:
+            logging.error("failed to index %s: %s" % (url, e))
+            return False
+
+        if not rsp.status_code in (200, 201):
+            logging.error("failed to index %s: %s %s" % (url, rsp.status_code, rsp.content))
+            return False
+            
+        return True
+
+    # https://www.elastic.co/guide/en/elasticsearch/reference/2.4/docs-bulk.html
+
+    def index_documents_bulk (self, iter, **kwargs):
+
+        count = kwargs.get('count', 5000)
+
+        """
+        {
+            '_id': id,
+            '_index': self.index,
+            '_type': doctype,
+            '_source': body
+        }
+        """
+
+        url = "http://%s:%s/_bulk" % (self.host, self.port)
+
+        cmds = []
+
+        for index in iter:
+            
+            # this sucks but we'll live with it for now
+
+            body = index["_source"]
+            del(index["_source"])
+
+            index = { 'index': index }
+
+            cmds.append(json.dumps(index))
+            cmds.append(json.dumps(body))
+            
+            # from the docs:
+            # NOTE: the final line of data must end with a newline character \n.
+
+            if len(cmds) == count:
+
+                cmds.append("")
+                body = "\n".join(cmds)
+                
+                try:
+                    rsp = requests.post(url, data=body)
+                except Exception, e:
+                    logging.error("failed to index %s: %s" % (url, e))
+                    return False
+
+                if not rsp.status_code in (200, 201):
+                    logging.error("failed to (bulk) index %s: %s %s" % (url, rsp.status_code, rsp.content))
+                    return False
+
+                cmds = []
+
+        if len(cmds):
+
+            cmds.append("")
+            body = "\n".join(cmds)
+
+            try:
+                rsp = requests.post(url, data=body)
+            except Exception, e:
+                logging.error("failed to index %s: %s" % (url, e))
+                return False
+                
+            if not rsp.status_code in (200, 201):
+                logging.error("failed to (bulk) index %s: %s %s" % (url, rsp.status_code, rsp.content))
+                return False
+
+        return True
+
+    # https://www.elastic.co/guide/en/elasticsearch/reference/2.4/docs-delete.html
+
+    def delete_document (self, data):
+
+        """
+        {
+            'id': id,
+            'index': self.index,
+            'doc_type': doctype,
+            'refresh': True
+        }
+        """
+
+        url = "http://%s:%s/%s/%s/%s" % (self.host, self.port, data['index'], data['doc_type'], doc['id'])
+
+        try:
+            requests.delete(url)
+        except Exception, e:
+            logging.error("failed to index %s: %s" % (url, e))
+            return False
+
+        return True
 
 class search (base):
 
