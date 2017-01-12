@@ -233,8 +233,8 @@ class search (base):
         if params.get('page', None):
             page = params['page']
 
-            es_params['from'] = (page - 1) * per_page
-            es_params['size'] = per_page
+        es_params['from'] = (page - 1) * per_page
+        es_params['size'] = per_page
 
         if len(es_params.keys()):
             q = urllib.urlencode(es_params)
