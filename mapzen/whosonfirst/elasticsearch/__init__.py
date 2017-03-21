@@ -221,25 +221,25 @@ class search (base):
         page = self.page
         per_page = self.per_page
 
+        es_params = {}
+
         if params.get('per_page', None):
 
             per_page = params['per_page']
-            del(params['per_page'])
 
             if per_page > self.per_page_max:
                 per_page = self.per_page_max
 
         if params.get('page', None):
             page = params['page']
-            del(params['page'])
 
-        params['_from'] = (page - 1) * per_page
-        params['size'] = per_page
+        es_params['from'] = (page - 1) * per_page
+        es_params['size'] = per_page
 
-        if len(params.keys()):
-            q = urllib.urlencode(params)
+        if len(es_params.keys()):
+            q = urllib.urlencode(es_params)
             url = url + "?" + q
-            
+
         body = json.dumps(body)
 
         t1 = time.time()
@@ -273,12 +273,12 @@ class search (base):
 
         return rsp['hits']['hits'][0]
 
-    def standard_rsp(self, rsp):
+    def standard_rsp(self, rsp, **kwargs):
 
         return {
             'ok': 1,
             'rows': self.rows(rsp),
-            'pagination': self.paginate(rsp)
+            'pagination': self.paginate(rsp, **kwargs)
         }
 
     def rows(self, rsp):
