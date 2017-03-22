@@ -2,6 +2,12 @@
 
 There are many libraries for talking to Elasticsearch. This one is ours.
 
-## Caveats
+## Install
 
-This is work in progress and not finished yet. Eventually either replace [py-mapzen-whosonfirst-search](https://github.com/whosonfirst/py-mapzen-whosonfirst-search) or be used by it under the hood. We'll see.
+```
+sudo pip install -r requirements.txt .
+```
+
+## See also
+
+* https://github.com/whosonfirst/py-mapzen-whosonfirst-search

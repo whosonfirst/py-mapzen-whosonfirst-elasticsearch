@@ -24,11 +24,6 @@ setup(
     description='',
     author='Mapzen',
     url='https://github.com/mapzen/py-mapzen-whosonfirst-elasticsearch',
-    install_requires=[
-        'requests'
-        ],
-    dependency_links=[
-        ],
     packages=packages,
     scripts=[
         ],
