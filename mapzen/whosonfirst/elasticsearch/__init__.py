@@ -258,7 +258,10 @@ class search (base):
             else:
                 logging.warning(msg)
 
-        return json.loads(rsp.content)
+        body = json.loads(rsp.content)
+        body["mz:timing"] = t
+
+        return body
 
     def single(self, rsp):
 
@@ -278,7 +281,8 @@ class search (base):
         return {
             'ok': 1,
             'rows': self.rows(rsp),
-            'pagination': self.paginate(rsp, **kwargs)
+            'pagination': self.paginate(rsp, **kwargs),
+            'timing': rsp.get("mz:timing", None)
         }
 
     def rows(self, rsp):
