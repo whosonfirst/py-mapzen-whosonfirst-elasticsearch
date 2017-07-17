@@ -4,7 +4,15 @@ import requests
 import math
 import time
 import logging
+
+# https://tenacity.readthedocs.io/en/latest/
+    
 from tenacity import retry
+from tenacity.stop import *
+from tenacity.wait import *
+from tenacity.after import *
+
+logger = logging.getLogger(__name__)
 
 class base:
 
@@ -110,9 +118,9 @@ class index (base):
 
         return True
 
-    # https://tenacity.readthedocs.io/en/latest/
+    # see above
 
-    @retry(stop=stop_after_attempt(5), wait=wait_fixed(5))
+    @retry(stop=stop_after_attempt(5), wait=wait_fixed(5), after=after_log(logger, logging.DEBUG))
     def do_index(self, url, body):
 
         rsp = requests.post(url, data=body)
