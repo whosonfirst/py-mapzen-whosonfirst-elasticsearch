@@ -4,6 +4,7 @@ import requests
 import math
 import time
 import logging
+from tenacity import retry
 
 class base:
 
@@ -34,7 +35,7 @@ class index (base):
         body = json.dumps(data['body'])
 
         try:
-            rsp = requests.post(url, data=body)
+            rsp = self.do_index(url, body)
         except Exception, e:
             logging.error("failed to index %s: %s" % (url, e))
             return False
@@ -83,15 +84,11 @@ class index (base):
 
                 cmds.append("")
                 body = "\n".join(cmds)
-                
-                try:
-                    rsp = requests.post(url, data=body)
-                except Exception, e:
-                    logging.error("failed to index %s: %s" % (url, e))
-                    return False
 
-                if not rsp.status_code in (200, 201):
-                    logging.error("failed to (bulk) index %s: %s %s" % (url, rsp.status_code, rsp.content))
+                try :
+                    rsp = self.do_index(url, body)
+                except Exception, e:
+                    logging.error("failed to index because %s" % e)
                     return False
 
                 cmds = []
@@ -112,6 +109,18 @@ class index (base):
                 return False
 
         return True
+
+    # https://tenacity.readthedocs.io/en/latest/
+
+    @retry(stop=stop_after_attempt(5), wait=wait_fixed(5))
+    def do_index(self, url, body):
+
+        rsp = requests.post(url, data=body)
+
+        if not rsp.status_code in (200, 201):
+            raise Exception, "failed to (bulk) index %s: %s %s" % (url, rsp.status_code, rsp.content)
+
+        return rsp
 
     # https://www.elastic.co/guide/en/elasticsearch/reference/2.4/docs-delete.html
 
