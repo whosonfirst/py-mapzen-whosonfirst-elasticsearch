@@ -126,7 +126,11 @@ class index (base):
         rsp = requests.post(url, data=body)
 
         if not rsp.status_code in (200, 201):
-            raise Exception, "failed to (bulk) index %s: %s %s" % (url, rsp.status_code, rsp.content)
+
+            msg = "failed to do_index %s: %s %s" % (url, rsp.status_code, rsp.content)
+            logging.error(msg)
+
+            raise Exception, msg
 
         return rsp
 
