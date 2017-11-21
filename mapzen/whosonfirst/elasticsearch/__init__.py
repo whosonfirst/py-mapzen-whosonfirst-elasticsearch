@@ -4,7 +4,6 @@ import requests
 import math
 import time
 import logging
-import copy
 
 # https://tenacity.readthedocs.io/en/latest/
     
@@ -231,6 +230,9 @@ class search (base):
 
     def query(self, **kwargs) :
 
+        page = self.page
+        per_page = self.per_page
+
         path = kwargs.get('path', '_search')
         body = kwargs.get('body', {})
         params = kwargs.get('params', {})
@@ -252,21 +254,16 @@ class search (base):
         if not scroll or page == 1:
             pre_count = True
 
-        # should this be body["query"].has_key... I
-        # never remember (20171121/thisisaaronland)
-        
         if body.has_key("aggregations"):
             scroll = False
             pre_count = False
 
         if pre_count:
 
-            _url = "http://%s:%s/_search" % (self.host, self.port)
-            
             if self.index:
                 _url = "http://%s:%s/%s/%s/_search" % (self.host, self.port, self.index, path)
             else:
-                _url = "http://%s:%s/%s/_search" % (self.host, self.port, path)
+                _url = "http://%s:%s/%s" % (self.host, self.port, path)
 
             _params = {'size': 0 }                
             _q = urllib.urlencode(_params)
@@ -274,21 +271,18 @@ class search (base):
             _url = _url + "?" + _q
 
             _body = json.dumps(body)
-        
+
             _rsp = requests.post(_url, data=_body)
             _data = json.loads(_rsp.content)
-            
+
 	    _hits = _data["hits"];
-	    count = _hits["total"];
+	    _count = _hits["total"];
 
 	    if _count > scroll_trigger:
                 scroll = True
 
         #
         
-        page = self.page
-        per_page = self.per_page
-
         es_params = {}
 
         if params.get('per_page', None):
@@ -311,8 +305,8 @@ class search (base):
         if scroll and scroll_id:
 
             body = {
-                'scroll' => scroll_ttl,
-                'scroll_id' => scroll_id,
+                'scroll': scroll_ttl,
+                'scroll_id': scroll_id,
             }
             
             url = "http://%s:%s/_search" % (self.host, self.port)
@@ -407,7 +401,7 @@ class search (base):
             'pages': pages
         }
 
-        scoll_id = data.get("_scroll_id", None)
+        scroll_id = rsp.get("_scroll_id", None)
 
         if scroll_id:
 
