@@ -4,6 +4,7 @@ import requests
 import math
 import time
 import logging
+import copy
 
 # https://tenacity.readthedocs.io/en/latest/
     
@@ -234,13 +235,57 @@ class search (base):
         body = kwargs.get('body', {})
         params = kwargs.get('params', {})
 
+        # scroll stuff is largely a mirror of this:
+        # https://github.com/whosonfirst/whosonfirst-www-api/blob/master/www/include/lib_elasticsearch.php#L15
+        # (20171121/thisisaaronland)
+        
         scroll = params.get('scroll', False)
         scroll_id = params.get('scroll_id', None)
         scroll_ttl = params.get('scroll_ttl', '1m')
+        scroll_trigger = params.get('scroll_trigger', 10000)        
 
         if not scroll_id:
             scroll_id = params.get('cursor', None)
 
+        pre_count = False
+        
+        if not scroll or page == 1:
+            pre_count = True
+
+        # should this be body["query"].has_key... I
+        # never remember (20171121/thisisaaronland)
+        
+        if body.has_key("aggregations"):
+            scroll = False
+            pre_count = False
+
+        if pre_count:
+
+            _url = "http://%s:%s/_search" % (self.host, self.port)
+            
+            if self.index:
+                _url = "http://%s:%s/%s/%s/_search" % (self.host, self.port, self.index, path)
+            else:
+                _url = "http://%s:%s/%s/_search" % (self.host, self.port, path)
+
+            _params = {'size': 0 }                
+            _q = urllib.urlencode(_params)
+            
+            _url = _url + "?" + _q
+
+            _body = json.dumps(body)
+        
+            _rsp = requests.post(_url, data=_body)
+            _data = json.loads(_rsp.content)
+            
+	    _hits = _data["hits"];
+	    count = _hits["total"];
+
+	    if _count > scroll_trigger:
+                scroll = True
+
+        #
+        
         page = self.page
         per_page = self.per_page
 
@@ -265,6 +310,11 @@ class search (base):
 
         if scroll and scroll_id:
 
+            body = {
+                'scroll' => scroll_ttl,
+                'scroll_id' => scroll_id,
+            }
+            
             url = "http://%s:%s/_search" % (self.host, self.port)
 
         elif scroll:
@@ -357,5 +407,18 @@ class search (base):
             'pages': pages
         }
 
+        scoll_id = data.get("_scroll_id", None)
+
+        if scroll_id:
+
+            cursor = scroll_id
+            pagination["cursor"] = cursor
+
+            if total == 0:
+                pagination["cursor"] = ""
+
+            if total <= per_page:
+                del(pagination["cursor"])
+                
         return pagination
         
