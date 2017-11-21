@@ -234,10 +234,12 @@ class search (base):
         body = kwargs.get('body', {})
         params = kwargs.get('params', {})
 
-        if self.index:
-            url = "http://%s:%s/%s/%s" % (self.host, self.port, self.index, path)
-        else:
-            url = "http://%s:%s/%s" % (self.host, self.port, path)
+        scroll = params.get('scroll', False)
+        scroll_id = params.get('scroll_id', None)
+        scroll_ttl = params.get('scroll_ttl', '1m')
+
+        if not scroll_id:
+            scroll_id = params.get('cursor', None)
 
         page = self.page
         per_page = self.per_page
@@ -251,19 +253,38 @@ class search (base):
             if per_page > self.per_page_max:
                 per_page = self.per_page_max
 
-        if params.get('page', None):
-            page = params['page']
+            if params.get('page', None):
+                page = params['page']
 
         es_params['from'] = (page - 1) * per_page
         es_params['size'] = per_page
 
-        if len(es_params.keys()):
-            q = urllib.urlencode(es_params)
-            url = url + "?" + q
-
         body = json.dumps(body)
 
         t1 = time.time()
+
+        if scroll and scroll_id:
+
+            url = "http://%s:%s/_search" % (self.host, self.port)
+
+        elif scroll:
+
+            es_params = { 'scroll': scroll_ttl }
+            q = urllib.urlencode(es_params)
+
+            url = "http://%s:%s/_search" % (self.host, self.port)
+            url = url + "?" + q
+
+        else:
+
+            if self.index:
+                url = "http://%s:%s/%s/%s" % (self.host, self.port, self.index, path)
+            else:
+                url = "http://%s:%s/%s" % (self.host, self.port, path)
+
+            if len(es_params.keys()):
+                q = urllib.urlencode(es_params)
+                url = url + "?" + q
 
         rsp = requests.post(url, data=body)
 
