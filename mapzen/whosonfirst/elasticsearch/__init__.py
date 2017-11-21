@@ -237,8 +237,52 @@ class search (base):
         body = kwargs.get('body', {})
         params = kwargs.get('params', {})
 
-        # scroll stuff is largely a mirror of this:
+        es_params = {}
+
+        if params.get('per_page', None):
+
+            per_page = params['per_page']
+
+            if per_page > self.per_page_max:
+                per_page = self.per_page_max
+
+            if params.get('page', None):
+                page = params['page']
+
+        es_params['from'] = (page - 1) * per_page
+        es_params['size'] = per_page
+
+        # scroll stuff is largely - but not exactly - a mirror of this:
         # https://github.com/whosonfirst/whosonfirst-www-api/blob/master/www/include/lib_elasticsearch.php#L15
+        # 
+        # the principal difference is that (for now) you are expected to
+        # explicitly pass in params['scroll'] = True to enable scrolling
+        # this probably (shouldn't) be the case in the future but unlike
+        # the API code there is a bunch of stuff that does traditional
+        # page-based pagination and striking out to track every last instance
+        # is a bit of yak-shaving exercise right now so it's up to you to
+        # invoke scroll-based pagination when it's necessary - for example:
+        #
+        # body = { 'query': query }
+        #
+        # args = { 'per_page': 1000, 'scroll': True }
+        # cursor = None
+        # 
+        # while True:
+        #
+        #     rsp = qry.query(body=body, params=args)
+        #     rsp = qry.standard_rsp(rsp, **args)
+        # 
+        #     cursor = rsp['pagination']['cursor']
+        # 
+        #     if cursor != '':
+        #         args['cursor'] = cursor
+        #     else:
+        #         break
+        #
+        # also it goes without saying that we want to implement the standard
+        # next_query stuff in the paginate() method below but not today...
+        #
         # (20171121/thisisaaronland)
         
         scroll = params.get('scroll', False)
@@ -283,21 +327,6 @@ class search (base):
 
         #
         
-        es_params = {}
-
-        if params.get('per_page', None):
-
-            per_page = params['per_page']
-
-            if per_page > self.per_page_max:
-                per_page = self.per_page_max
-
-            if params.get('page', None):
-                page = params['page']
-
-        es_params['from'] = (page - 1) * per_page
-        es_params['size'] = per_page
-
         body = json.dumps(body)
 
         t1 = time.time()
@@ -408,6 +437,9 @@ class search (base):
             'page': page,
             'pages': pages
         }
+
+        # see notes above in query() about scroll-based pagination and
+        # 'next_query' properties in pagination (20171121/thisisaaronland)
 
         scroll_id = rsp.get("_scroll_id", None)
 
