@@ -243,7 +243,7 @@ class search (base):
         
         scroll = params.get('scroll', False)
         scroll_id = params.get('scroll_id', None)
-        scroll_ttl = params.get('scroll_ttl', '1m')
+        scroll_ttl = params.get('scroll_ttl', '2m')
         scroll_trigger = params.get('scroll_trigger', 10000)        
 
         if not scroll_id:
@@ -251,7 +251,7 @@ class search (base):
 
         pre_count = False
         
-        if not scroll or page == 1:
+        if scroll and not scroll_id:
             pre_count = True
 
         if body.has_key("aggregations"):
@@ -304,16 +304,24 @@ class search (base):
 
         if scroll and scroll_id:
 
+            if self.index:
+                url = "http://%s:%s/%s/%s" % (self.host, self.port, self.index, path)
+            else:
+                url = "http://%s:%s/%s" % (self.host, self.port, path)
+
+            url = url + "/scroll"
+
             body = {
                 'scroll': scroll_ttl,
                 'scroll_id': scroll_id,
             }
             
-            url = "http://%s:%s/_search" % (self.host, self.port)
+            body = json.dumps(body)
 
         elif scroll:
 
-            es_params = { 'scroll': scroll_ttl }
+            es_params['scroll'] = scroll_ttl
+
             q = urllib.urlencode(es_params)
 
             url = "http://%s:%s/_search" % (self.host, self.port)
@@ -408,7 +416,7 @@ class search (base):
             cursor = scroll_id
             pagination["cursor"] = cursor
 
-            if total == 0:
+            if count == 0:
                 pagination["cursor"] = ""
 
             if total <= per_page:
