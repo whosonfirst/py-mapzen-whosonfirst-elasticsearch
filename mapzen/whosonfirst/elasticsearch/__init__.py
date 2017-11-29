@@ -353,7 +353,11 @@ class search (base):
 
             q = urllib.urlencode(es_params)
 
-            url = "http://%s:%s/_search" % (self.host, self.port)
+            if self.index:
+                url = "http://%s:%s/%s/%s" % (self.host, self.port, self.index, path)
+            else:
+                url = "http://%s:%s/%s" % (self.host, self.port, path)
+
             url = url + "?" + q
 
         else:
