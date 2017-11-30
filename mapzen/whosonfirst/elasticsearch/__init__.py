@@ -287,7 +287,7 @@ class search (base):
         
         scroll = params.get('scroll', False)
         scroll_id = params.get('scroll_id', None)
-        scroll_ttl = params.get('scroll_ttl', '2m')
+        scroll_ttl = params.get('scroll_ttl', '5m')
         scroll_trigger = params.get('scroll_trigger', 10000)        
 
         if not scroll_id:
@@ -301,6 +301,8 @@ class search (base):
         if body.has_key("aggregations"):
             scroll = False
             pre_count = False
+
+        # print "DEBUG SCROLL %s SCROLL ID %s PRECOUNT %s" % (scroll, scroll_id, pre_count)
 
         if pre_count:
 
@@ -333,11 +335,7 @@ class search (base):
 
         if scroll and scroll_id:
 
-            if self.index:
-                url = "http://%s:%s/%s/%s" % (self.host, self.port, self.index, path)
-            else:
-                url = "http://%s:%s/%s" % (self.host, self.port, path)
-
+            url = "http://%s:%s/%s" % (self.host, self.port, path)
             url = url + "/scroll"
 
             body = {
