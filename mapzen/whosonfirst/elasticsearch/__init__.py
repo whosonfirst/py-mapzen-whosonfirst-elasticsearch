@@ -255,6 +255,8 @@ class search (base):
         # scroll stuff is largely - but not exactly - a mirror of this:
         # https://github.com/whosonfirst/whosonfirst-www-api/blob/master/www/include/lib_elasticsearch.php#L15
         # 
+        # https://www.elastic.co/guide/en/elasticsearch/guide/current/scroll.html
+        #
         # the principal difference is that (for now) you are expected to
         # explicitly pass in params['scroll'] = True to enable scrolling
         # this probably (shouldn't) be the case in the future but unlike
