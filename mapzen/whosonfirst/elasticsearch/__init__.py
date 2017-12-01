@@ -228,6 +228,39 @@ class search (base):
 
         return "".join(escaped)
 
+    # this depends on all the scroll_id stuff (above)
+
+    def query_paginated(self, query, **kwargs) :
+
+        per_page = kwargs.get("per_page", 500)
+
+        body = {
+            'query': query
+        }
+
+        args = {
+            'per_page': per_page,
+            'scroll': True
+        }
+
+        while True:
+
+            rsp = self.query(body=body, params=args)
+            rsp = self.standard_rsp(rsp, **args)
+
+            total = rsp["pagination"]["total"]
+
+            for row in rsp['rows']:
+                row = row["_source"]
+                yield row
+
+            cursor = rsp['pagination'].get('cursor', "")
+
+            if cursor != '':
+                args['scroll_id'] = cursor
+            else:
+                break
+
     def query(self, **kwargs) :
 
         page = self.page
