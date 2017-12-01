@@ -228,6 +228,21 @@ class search (base):
 
         return "".join(escaped)
 
+    def query_count(self, query):
+
+        body = {
+            'query': query
+        }
+
+        args = {
+            'per_page': 1
+        }
+
+        rsp = self.query(body=body, params=args)
+        rsp = self.standard_rsp(rsp, **args)
+
+        return rsp["pagination"]["total"]
+        
     # this depends on all the scroll_id stuff (above)
 
     def query_paginated(self, query, **kwargs) :
