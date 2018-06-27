@@ -23,6 +23,19 @@ class base:
         self.index = kwargs.get('index', None)
         self.doctype = kwargs.get('doctype', None)
 
+    def endpoint(self):
+
+        url = None
+
+        # because AWS elasticsearch...
+
+        if str(self.port) == '443':
+            url = "https://%s" % self.host
+        else:
+            url = "http://%s:%s" % (self.host, self.port)
+
+        return url
+
 class index (base):
 
     # https://www.elastic.co/guide/en/elasticsearch/reference/2.4/docs-index_.html
@@ -38,7 +51,7 @@ class index (base):
         }
         """
 
-        url = "http://%s:%s/%s/%s/%s" % (self.host, self.port, data['index'], data['doc_type'], data['id'])
+        url = "%s/%s/%s/%s" % (self.endpoint(), data['index'], data['doc_type'], data['id'])
 
         body = json.dumps(data['body'])
 
@@ -69,7 +82,7 @@ class index (base):
         }
         """
 
-        url = "http://%s:%s/_bulk" % (self.host, self.port)
+        url = "%s/_bulk" % (self.endpoint())
 
         cmds = []
 
@@ -147,7 +160,7 @@ class index (base):
         }
         """
 
-        url = "http://%s:%s/%s/%s/%s" % (self.host, self.port, data['index'], data['doc_type'], doc['id'])
+        url = "%s/%s/%s/%s" % (self.endpoint(), data['index'], data['doc_type'], doc['id'])
 
         try:
             requests.delete(url)
@@ -357,9 +370,9 @@ class search (base):
         if pre_count:
 
             if self.index:
-                _url = "http://%s:%s/%s/%s/_search" % (self.host, self.port, self.index, path)
+                _url = "%s/%s/%s/_search" % (self.endpoint(), self.index, path)
             else:
-                _url = "http://%s:%s/%s" % (self.host, self.port, path)
+                _url = "%s/%s" % (self.endpoint(), path)
 
             _params = {'size': 0 }                
             _q = urllib.urlencode(_params)
@@ -385,7 +398,7 @@ class search (base):
 
         if scroll and scroll_id:
 
-            url = "http://%s:%s/%s" % (self.host, self.port, path)
+            url = "%s/%s" % (self.endpoint(), path)
             url = url + "/scroll"
 
             body = {
@@ -402,18 +415,18 @@ class search (base):
             q = urllib.urlencode(es_params)
 
             if self.index:
-                url = "http://%s:%s/%s/%s" % (self.host, self.port, self.index, path)
+                url = "%s/%s/%s" % (self.endpoint(), self.index, path)
             else:
-                url = "http://%s:%s/%s" % (self.host, self.port, path)
+                url = "%s/%s" % (self.endpoint(), path)
 
             url = url + "?" + q
 
         else:
 
             if self.index:
-                url = "http://%s:%s/%s/%s" % (self.host, self.port, self.index, path)
+                url = "%s/%s/%s" % (self.endpoint(), self.index, path)
             else:
-                url = "http://%s:%s/%s" % (self.host, self.port, path)
+                url = "%s/%s" % (self.endpoint(), path)
 
             if len(es_params.keys()):
                 q = urllib.urlencode(es_params)
