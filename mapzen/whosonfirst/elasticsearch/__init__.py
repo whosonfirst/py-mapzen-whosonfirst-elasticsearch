@@ -74,6 +74,8 @@ class index (base):
         strict = kwargs.get('strict', True)
         count = kwargs.get('count', 5000)
 
+        logging.info("index bulk documents (%d count) w/strict mode: %s" % (count, strict))
+        
         """
         {
             '_id': id,
@@ -149,8 +151,6 @@ class index (base):
     @retry(stop=stop_after_attempt(5), wait=wait_fixed(5), after=after_log(logger, logging.DEBUG))
     def do_index(self, url, body):
 
-        print "WTF %s" % url
-        
         rsp = requests.post(url, data=body)
 
         if not rsp.status_code in (200, 201):
