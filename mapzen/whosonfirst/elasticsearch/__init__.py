@@ -71,6 +71,7 @@ class index (base):
 
     def index_documents_bulk (self, iter, **kwargs):
 
+        strict = kwargs.get('strict', True)
         count = kwargs.get('count', 5000)
 
         """
@@ -110,7 +111,11 @@ class index (base):
                     rsp = self.do_index(url, body)
                 except Exception, e:
                     logging.error("failed to index because %s" % e)
-                    return False
+
+                    if strict:
+                        return False
+                    else:
+                        logging.warning("strict-iness is disabled, so chugging along regardless")
 
                 cmds = []
 
@@ -123,11 +128,19 @@ class index (base):
                 rsp = requests.post(url, data=body)
             except Exception, e:
                 logging.error("failed to index %s: %s" % (url, e))
-                return False
-                
+
+                if strict:
+                    return False
+                else:
+                    logging.warning("strict-iness is disabled, so chugging along regardless")
+                        
             if not rsp.status_code in (200, 201):
                 logging.error("failed to (bulk) index %s: %s %s" % (url, rsp.status_code, rsp.content))
-                return False
+
+                if strict:
+                    return False
+                else:
+                    logging.warning("strict-iness is disabled, so chugging along regardless")
 
         return True
 
@@ -136,6 +149,8 @@ class index (base):
     @retry(stop=stop_after_attempt(5), wait=wait_fixed(5), after=after_log(logger, logging.DEBUG))
     def do_index(self, url, body):
 
+        print "WTF %s" % url
+        
         rsp = requests.post(url, data=body)
 
         if not rsp.status_code in (200, 201):
