@@ -126,8 +126,9 @@ class index (base):
             cmds.append("")
             body = "\n".join(cmds)
 
-            try:
-                rsp = requests.post(url, data=body)
+            try:            
+                headers = { "Content-Type": "application/json" }
+                rsp = requests.post(url, data=body, headers=headers)
             except Exception, e:
                 logging.error("failed to index %s: %s" % (url, e))
 
@@ -151,7 +152,8 @@ class index (base):
     @retry(stop=stop_after_attempt(5), wait=wait_fixed(5), after=after_log(logger, logging.DEBUG))
     def do_index(self, url, body):
 
-        rsp = requests.post(url, data=body)
+        headers = { "Content-Type": "application/json" }
+        rsp = requests.post(url, data=body, headers=headers)
 
         if not rsp.status_code in (200, 201):
 
@@ -396,7 +398,8 @@ class search (base):
 
             _body = json.dumps(body)
 
-            _rsp = requests.post(_url, data=_body)
+            _headers = { "Content-Type": "application/json" }
+            _rsp = requests.post(_url, data=_body, headers=_headers)
             _data = json.loads(_rsp.content)
 
 	    _hits = _data["hits"];
@@ -447,7 +450,8 @@ class search (base):
                 q = urllib.urlencode(es_params)
                 url = url + "?" + q
 
-        rsp = requests.post(url, data=body)
+        headers = { "Content-Type": "application/json" }
+        rsp = requests.post(url, data=body, headers=headers)
 
         t2 = time.time()
         t = t2 - t1
