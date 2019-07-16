@@ -500,8 +500,12 @@ class search (base):
         }
 
     def rows(self, rsp):
-        return rsp['hits']['hits']
-
+        try:
+            return rsp['hits']['hits']
+        except Exception, e:
+            print "WTF %s" % rsp
+            return []
+        
     def paginate(self, rsp, **kwargs):
 
         per_page = kwargs.get('per_page', self.per_page)
