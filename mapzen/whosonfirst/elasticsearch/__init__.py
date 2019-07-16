@@ -273,7 +273,7 @@ class search (base):
 
         return rsp["pagination"]["total"]
         
-    # this depends on all the scroll_id stuff (above)
+    # this depends on all the scroll_id stuff (below in def query(self, **kwargs))
 
     def query_paginated(self, query, **kwargs) :
 
@@ -307,7 +307,7 @@ class search (base):
                 break
 
     def query(self, **kwargs) :
-
+        
         page = self.page
         per_page = self.per_page
 
@@ -382,16 +382,20 @@ class search (base):
             scroll = False
             pre_count = False
 
-        # print "DEBUG SCROLL %s SCROLL ID %s PRECOUNT %s" % (scroll, scroll_id, pre_count)
+        print "DEBUG SCROLL %s SCROLL ID %s PRECOUNT %s" % (scroll, scroll_id, pre_count)
 
         if pre_count:
 
             if self.index:
-                _url = "%s/%s/%s/_search" % (self.endpoint(), self.index, path)
+                _url = "%s/%s/%s" % (self.endpoint(), self.index, path)
             else:
                 _url = "%s/%s" % (self.endpoint(), path)
 
-            _params = {'size': 0 }                
+            _params = {
+                'from': 0,
+                'size': 0
+            }
+            
             _q = urllib.urlencode(_params)
             
             _url = _url + "?" + _q
@@ -399,17 +403,22 @@ class search (base):
             _body = json.dumps(body)
 
             _headers = { "Content-Type": "application/json" }
+            
             _rsp = requests.post(_url, data=_body, headers=_headers)
             _data = json.loads(_rsp.content)
 
 	    _hits = _data["hits"];
 	    _count = _hits["total"];
+            
+            if _count < scroll_trigger:
+                scroll = False
 
-	    if _count > scroll_trigger:
-                scroll = True
-
+            print "DEBUG PRECOUNT _count '%s' trigger '%s' scroll '%s'" % (_count, scroll_trigger, scroll)
+            
         #
-        
+
+        print "DEBUG SEARCH scroll '%s' scroll_id '%s' params '%s'" % (scroll, scroll_id, es_params)
+            
         body = json.dumps(body)
 
         t1 = time.time()
