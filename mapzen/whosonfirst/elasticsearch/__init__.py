@@ -492,6 +492,14 @@ class search (base):
 
     def standard_rsp(self, rsp, **kwargs):
 
+        # as in expired cursors
+        # WTF {u'status': 404, 'mz:timing': 0.005153179168701172, u'error': {u'failed_shards': [{u'index': None, u'reason': {u'reason': u'No search context found for id [422628]',                
+        if rsp.get("status", None) == 404:
+            return {
+                'ok': 1,
+                'error': rsp["error"],
+            }
+
         return {
             'ok': 1,
             'rows': self.rows(rsp),
