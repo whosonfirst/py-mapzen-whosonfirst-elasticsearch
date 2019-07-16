@@ -307,7 +307,7 @@ class search (base):
                 break
 
     def query(self, **kwargs) :
-        
+
         page = self.page
         per_page = self.per_page
 
@@ -324,8 +324,8 @@ class search (base):
             if per_page > self.per_page_max:
                 per_page = self.per_page_max
 
-            if params.get('page', None):
-                page = params['page']
+        if params.get('page', None):
+            page = params['page']
 
         es_params['from'] = (page - 1) * per_page
         es_params['size'] = per_page
@@ -382,7 +382,7 @@ class search (base):
             scroll = False
             pre_count = False
 
-        print "DEBUG SCROLL %s SCROLL ID %s PRECOUNT %s" % (scroll, scroll_id, pre_count)
+        # print "DEBUG SCROLL %s SCROLL ID %s PRECOUNT %s" % (scroll, scroll_id, pre_count)
 
         if pre_count:
 
@@ -413,12 +413,10 @@ class search (base):
             if _count < scroll_trigger:
                 scroll = False
 
-            print "DEBUG PRECOUNT _count '%s' trigger '%s' scroll '%s'" % (_count, scroll_trigger, scroll)
+            # print "DEBUG PRECOUNT _count '%s' trigger '%s' scroll '%s'" % (_count, scroll_trigger, scroll)
             
         #
 
-        print "DEBUG SEARCH scroll '%s' scroll_id '%s' params '%s'" % (scroll, scroll_id, es_params)
-            
         body = json.dumps(body)
 
         t1 = time.time()
