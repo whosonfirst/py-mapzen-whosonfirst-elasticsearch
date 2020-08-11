@@ -57,7 +57,7 @@ class index (base):
 
         try:
             rsp = self.do_index(url, body)
-        except Exception, e:
+        except Exception as e:
             logging.error("failed to index %s: %s" % (url, e))
             return False
 
@@ -111,7 +111,7 @@ class index (base):
 
                 try :
                     rsp = self.do_index(url, body)
-                except Exception, e:
+                except Exception as e:
                     logging.error("failed to index because %s" % e)
 
                     if strict:
@@ -129,7 +129,7 @@ class index (base):
             try:            
                 headers = { "Content-Type": "application/json" }
                 rsp = requests.post(url, data=body, headers=headers)
-            except Exception, e:
+            except Exception as e:
                 logging.error("failed to index %s: %s" % (url, e))
 
                 if strict:
@@ -160,7 +160,7 @@ class index (base):
             msg = "failed to do_index %s: %s %s" % (url, rsp.status_code, rsp.content)
             logging.error(msg)
 
-            raise Exception, msg
+            raise Exception(msg)
 
         return rsp
 
@@ -181,7 +181,7 @@ class index (base):
 
         try:
             requests.delete(url)
-        except Exception, e:
+        except Exception as e:
             logging.error("failed to index %s: %s" % (url, e))
             return False
 
@@ -407,8 +407,8 @@ class search (base):
             _rsp = requests.post(_url, data=_body, headers=_headers)
             _data = json.loads(_rsp.content)
 
-	    _hits = _data["hits"];
-	    _count = _hits["total"];
+            _hits = _data["hits"];
+            _count = _hits["total"];
             
             if _count < scroll_trigger:
                 scroll = False
@@ -502,7 +502,7 @@ class search (base):
             
             try:
                 error = rsp["error"]["root_cause"][0]
-            except Exception, e:
+            except Exception as e:
                 logging.warning("Unable to determine root case for 404 error (%s)", rsp["error"])
                 
             return {
@@ -530,8 +530,7 @@ class search (base):
     def rows(self, rsp):
         try:
             return rsp['hits']['hits']
-        except Exception, e:
-            print "WTF %s" % rsp
+        except Exception as e:
             return []
         
     def paginate(self, rsp, **kwargs):

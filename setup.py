@@ -20,6 +20,7 @@ version = open("VERSION").read()
 setup(
     name='mapzen.whosonfirst.elasticsearch',
     namespace_packages=['mapzen', 'mapzen.whosonfirst' ],
+    python_requires='>3',    
     version=version,
     description='',
     author='Mapzen',
