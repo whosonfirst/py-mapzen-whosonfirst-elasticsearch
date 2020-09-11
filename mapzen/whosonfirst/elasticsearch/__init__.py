@@ -177,7 +177,7 @@ class index (base):
         }
         """
 
-        url = "%s/%s/%s/%s" % (self.endpoint(), data['index'], data['doc_type'], doc['id'])
+        url = "%s/%s/%s/%s" % (self.endpoint(), data['index'], data['doc_type'], data['id'])
 
         try:
             requests.delete(url)
@@ -244,12 +244,12 @@ class search (base):
             char = unistr[i]
 
             if char in to_escape:
-                char = "\%s" % char
+                char = "\%s" % char # pylint: disable=anomalous-backslash-in-string
 
             elif char in ("&", "|"):
 
                 if (i + 1) < length and unistr[ i + 1 ] == char:
-                    char = "\%s" % char
+                    char = "\%s" % char # pylint: disable=anomalous-backslash-in-string
             else:
                 pass
 
@@ -293,7 +293,7 @@ class search (base):
             rsp = self.query(body=body, params=args)
             rsp = self.standard_rsp(rsp, **args)
 
-            total = rsp["pagination"]["total"]
+            # total = rsp["pagination"]["total"]
 
             for row in rsp['rows']:
                 row = row["_source"]
@@ -378,7 +378,9 @@ class search (base):
         if scroll and not scroll_id:
             pre_count = True
 
-        if body.has_key("aggregations"):
+        # Python 3 migration-ify
+        # (20200910/vicchi)
+        if "aggregations" in body:
             scroll = False
             pre_count = False
 
@@ -396,7 +398,9 @@ class search (base):
                 'size': 0
             }
             
-            _q = urllib.urlencode(_params)
+            # Python 3 migration-ify
+            # (20200910/vicchi)
+            _q = urllib.parse.urlencode(_params)
             
             _url = _url + "?" + _q
 
@@ -407,8 +411,8 @@ class search (base):
             _rsp = requests.post(_url, data=_body, headers=_headers)
             _data = json.loads(_rsp.content)
 
-            _hits = _data["hits"];
-            _count = _hits["total"];
+            _hits = _data["hits"]
+            _count = _hits["total"]
             
             if _count < scroll_trigger:
                 scroll = False
@@ -437,7 +441,9 @@ class search (base):
 
             es_params['scroll'] = scroll_ttl
 
-            q = urllib.urlencode(es_params)
+            # Python 3 migration-ify
+            # (20200910/vicchi)
+            q = urllib.parse.urlencode(es_params)
 
             if self.index:
                 url = "%s/%s/%s" % (self.endpoint(), self.index, path)
@@ -454,7 +460,9 @@ class search (base):
                 url = "%s/%s" % (self.endpoint(), path)
 
             if len(es_params.keys()):
-                q = urllib.urlencode(es_params)
+                # Python 3 migration-ify
+                # (20200910/vicchi)
+                q = urllib.parse.urlencode(es_params)
                 url = url + "?" + q
 
         headers = { "Content-Type": "application/json" }
@@ -502,7 +510,10 @@ class search (base):
             
             try:
                 error = rsp["error"]["root_cause"][0]
-            except Exception as e:
+
+            # Python 3 migration-ify
+            # (20200910/vicchi)
+            except Exception as _:
                 logging.warning("Unable to determine root case for 404 error (%s)", rsp["error"])
                 
             return {
@@ -530,7 +541,10 @@ class search (base):
     def rows(self, rsp):
         try:
             return rsp['hits']['hits']
-        except Exception as e:
+        
+        # Python 3 migration-ify
+        # (20200910/vicchi)
+        except Exception as _:
             return []
         
     def paginate(self, rsp, **kwargs):
