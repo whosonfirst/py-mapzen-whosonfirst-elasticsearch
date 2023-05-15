@@ -234,7 +234,10 @@ class search (base):
 
         escaped = []
 
-        unistr = str.decode("utf-8")
+        # str is always unicode in python3, right?
+        # unistr = str.decode("utf-8")
+
+        unistr = str        
         length = len(unistr)
 
         i = 0
